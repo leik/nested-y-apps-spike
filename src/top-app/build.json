@@ -1,0 +1,16 @@
+{
+	"name": "top-app",
+	"builds": {
+		"top-app": {
+			"prependfiles": [
+				"../../.copyright.js"
+			],
+			"jsfiles": [
+				"top-app.js"
+			]
+		}
+	},
+	"shifter": {
+		"strict": true
+	}
+}

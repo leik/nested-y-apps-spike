@@ -1,0 +1,10 @@
+{
+	"top-app": {
+		"requires": [
+			"app-base",
+			"array-extras",
+			"base",
+			"handlebars"
+		]
+	}
+}

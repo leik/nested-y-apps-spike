@@ -1,0 +1,9 @@
+{
+	"hi-app": {
+		"requires": [
+			"app-base",
+			"base",
+			"handlebars"
+		]
+	}
+}

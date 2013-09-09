@@ -1,0 +1,16 @@
+{
+	"name": "hi-app",
+	"builds": {
+		"hi-app": {
+			"prependfiles": [
+				"../../.copyright.js"
+			],
+			"jsfiles": [
+				"hi-app.js"
+			]
+		}
+	},
+	"shifter": {
+		"strict": true
+	}
+}
