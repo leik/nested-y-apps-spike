@@ -53,7 +53,11 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 	},
 
 	_renderInnerAppContent: function() {
+		var componentContext = this.get('componentContext'),
+			person = componentContext && componentContext.person;
+
 		this.get('viewContainer').setHTML(_renderContent({
+			name: person && person.name,
 			greeting: this._activeGreeting
 		}));
 	},
@@ -64,6 +68,10 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 	}
 }, {
 	ATTRS: {
+		componentContext: {
+			writeOnce: 'initOnly'
+		},
+
 		routes: {
 			value: [{
 				path: '/',

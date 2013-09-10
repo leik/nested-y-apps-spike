@@ -18,6 +18,20 @@ var CLASS_NAMES = {
 		className: 'ByeApp'
 	}],
 
+	MOCK_PEOPLE = [{
+		identifier: {
+			id: 'james',
+			namespace: 'human'
+		},
+		name: 'James'
+	}, {
+		identifier: {
+			id: 'spock',
+			namespace: 'vulcan'
+		},
+		name: 'Spock'
+	}],
+
 	THROBBER_HTML = '<div class="throbber-large"></div>',
 
 	TopApp,
@@ -27,7 +41,11 @@ _renderMenu = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
 		'<ul class="' + CLASS_NAMES.pjax + '">' +
 			'{{#each menuItems}}' +
-				'<li><a href="{{{../baseUrl}}}{{path}}">{{label}}</a></li>' +
+				'<li><a href="{{{../baseUrl}}}{{path}}" data-path="{{path}}">{{label}}</a></li>' +
+			'{{/each}}' +
+			'<li class="pure-menu-separator"></li>' +
+			'{{#each people}}' +
+				'<li><a href="{{{../rootUrl}}}{{@key}}" data-personIdentifier="{{@key}}">{{name}}</a></li>' +
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
@@ -38,7 +56,8 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 	initializer: function() {
 		var modules,
-			appConfigByPath = {};
+			appConfigByPath = {},
+			people;
 
 		modules = Y.Array.map(MOCK_CONFIG, function(appConfig) {
 			appConfigByPath[appConfig.contextPath] = appConfig;
@@ -46,7 +65,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			return appConfig.moduleName;
 		});
 
-		// Trigger a prefetch the modules for all the sub-apps
+		// Trigger a prefetch of the modules for all the sub-apps
 		Y.use(modules);
 
 		this._appConfigByPath = appConfigByPath;
@@ -64,6 +83,16 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			label: 'Good Riddance',
 			path: 'bye/riddance'
 		}];
+
+		people = {};
+		Y.each(MOCK_PEOPLE, function(person) {
+			var identifier = person.identifier;
+			people[identifier.id + '@' + identifier.namespace] =  person;
+		});
+		this._people = people;
+
+		this.after('activePersonChange', this._updateAppMenuUrls, this);
+		this.after('activeAppPathChange', this._updatePersonMenuUrls, this);
 	},
 
 	render: function() {
@@ -73,7 +102,9 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		menuHtml = _renderMenu({
 			menuItems: this._menuItems,
-			baseUrl: this._normalizePath(this.get('root') + '/')
+			people: this._people,
+			baseUrl: this.get('baseUrl'),
+			rootUrl: this.get('rootUrl')
 		});
 
 		this.get('container').insertBefore(menuHtml, this.get('viewContainer'));
@@ -82,11 +113,73 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		return this;
 	},
 
-	_showNestedApp: function(req) {
-		var appPath = req.params.appPath;
+	_updateAppMenuUrls: function() {
+		var container = this.get('container'),
+			baseUrl;
+
+		if (!container) {
+			// Obviously haven't rendered yet, nothing to update
+			return;
+		}
+
+		baseUrl = this.get('baseUrl');
+
+		Y.each(this._menuItems, function(menuItem) {
+			var path = menuItem.path,
+				menuItemNode = container.one('> .pure-menu a[data-path="' + path + '"]');
+
+			if (menuItemNode) {
+				menuItemNode.setAttribute('href', baseUrl + path);
+			}
+		}, this);
+	},
+
+	_updatePersonMenuUrls: function() {
+		var container = this.get('container'),
+			rootUrl,
+			activeAppPath;
+
+		if (!container) {
+			// Obviously haven't rendered yet, nothing to update
+			return;
+		}
+
+		rootUrl = this.get('rootUrl');
+		activeAppPath = this.get('activeAppPath');
+		activeAppPath = activeAppPath ? ('/' + activeAppPath) : '';
+
+		Y.each(this._people, function(person, personIdentifier) {
+			var menuItemNode = container.one('> .pure-menu a[data-personIdentifier="' + personIdentifier + '"]');
+
+			if (menuItemNode) {
+				menuItemNode.setAttribute('href', rootUrl + personIdentifier + activeAppPath);
+			}
+		}, this);
+	},
+
+	_handleTopAppRouteChange: function(req) {
+		var params = req.params,
+			appPath = params.appPath,
+			personId = params.personId && params.personNs ? (params.personId + '@' + params.personNs) : null,
+			activePerson = null,
+			personChanged;
+
+		if (personId) {
+			activePerson = this._people[personId];
+
+			if (!activePerson) {
+				alert('404! No such person with id "' + personId + '".');
+				return;
+			}
+		}
+		personChanged = (activePerson !== this.get('activePerson'));
+
+		if (personChanged) {
+			this._set('activePerson', activePerson);
+		}
 
 		if (appPath) {
-			if (this._activeAppPath === appPath) {
+			if (!personChanged && this.get('activeAppPath') === appPath) {
 				console.log('App with path "' + appPath + '" already active, doing nothing.');
 				return;
 			}
@@ -98,7 +191,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		if (this._activeApp) {
 			this._activeApp.destroy();
-			delete this._activeAppPath;
+			this._set('activeAppPath', null);
 		}
 
 		if (appPath) {
@@ -123,6 +216,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			AppFn = ns && ns[cfg.className],
 			viewContainer,
 			appConfig,
+			activePerson,
 			app;
 
 		if (!AppFn) {
@@ -135,7 +229,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		appConfig = {
 			container: viewContainer,
-			root: this._joinURL(appPath),
+			root: this.get('baseUrl') + appPath,
 			linkSelector: null,
 			// Important on IE 9 and below
 			serverRouting: true
@@ -146,22 +240,73 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		}
 		console.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
 
+		activePerson = this.get('activePerson');
+		if (activePerson) {
+			appConfig.componentContext = {
+				person: activePerson
+			};
+		}
+
 		app = new AppFn(appConfig);
 
 		this._activeApp = app;
-		this._activeAppPath = appPath;
+		this._set('activeAppPath', appPath);
 
 		app.render().dispatch();
+	},
+
+	_getAttrRootUrl: function() {
+		return this._normalizePath(this.get('root') + '/');
+	},
+
+	_getAttrBaseUrl: function() {
+		var baseUrl = this.get('rootUrl'),
+			activePerson = this.get('activePerson'),
+			identifier;
+
+		if (activePerson) {
+			identifier = activePerson.identifier;
+			baseUrl += identifier.id + '@' + identifier.namespace + '/';
+		}
+
+		return this._normalizePath(baseUrl);
 	}
 }, {
 	ATTRS: {
+		activePerson: {
+			readOnly: true
+		},
+
+		activeAppPath: {
+			readOnly: true
+		},
+
+		rootUrl: {
+			readOnly: true,
+			getter: '_getAttrRootUrl'
+		},
+
+		baseUrl: {
+			readOnly: true,
+			getter: '_getAttrBaseUrl'
+		},
+
 		routes: {
 			value: [{
+				path: '/:personId@:personNs',
+				callbacks: '_handleTopAppRouteChange'
+			}, {
+				path: '/:personId@:personNs/:appPath',
+				callbacks: '_handleTopAppRouteChange'
+			}, {
+				path: '/:personId@:personNs/:appPath/*',
+				callbacks: '_handleTopAppRouteChange'
+			}, {
 				path: '/:appPath',
-				callbacks: '_showNestedApp'
+				callbacks: '_handleTopAppRouteChange'
 			}, {
 				path: '/:appPath/*',
-				callbacks: '_showNestedApp'
+				callbacks: '_handleTopAppRouteChange'
 			}]
 		},
 
