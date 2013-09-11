@@ -1,0 +1,1 @@
+YUI.applyConfig({"groups":{"spike":{"base":"/static/","modules":{"bye-app":{"requires":["app-base","base","handlebars"],"path":"bye-app/bye-app-debug.js"},"hi-app":{"requires":["app-base","base","handlebars"],"path":"hi-app/hi-app-debug.js"},"top-app":{"requires":["app-base","array-extras","base","handlebars"],"path":"top-app/top-app-debug.js"}}}}});
