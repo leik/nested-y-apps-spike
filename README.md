@@ -1,7 +1,7 @@
 Nested Y.Apps Spike
 ===================
 
-A spike for nesting [YUI App instances](http://yuilibrary.com/yui/docs/app/) for integrating independent client side applications.
+A spike (prototype/experiment) for nesting [YUI App instances](http://yuilibrary.com/yui/docs/app/) for integrating independent client side applications.
 
 Jump to:
 - [how to build and run the spike](#running-the-spike)
@@ -44,6 +44,8 @@ Any feedback at all will be greatly appreciated:
 * submit a pull request (if you have solutions to aforementioned glaring problems)
 
 ## Running the Spike ##
+
+Ensure you have [Node.js](http://nodejs.org/) and [Grunt.js](http://gruntjs.com/) installed.
 
 1. Install dependencies:
 
