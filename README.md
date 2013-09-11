@@ -4,6 +4,7 @@ Nested Y.Apps Spike
 A spike (prototype/experiment) for nesting [YUI App instances](http://yuilibrary.com/yui/docs/app/) for integrating independent client side applications.
 
 Jump to:
+- [a running instance of the spike on Heroku](http://nested-y-apps-spike.herokuapp.com/)
 - [how to build and run the spike](#running-the-spike)
 - [how you can provide (some greatly appreciated) feedback](#questions-for-reviewers)
 - [src/top-app/js/top-app.js](https://github.com/orionhealth/nested-y-apps-spike/blob/master/src/top-app/js/top-app.js) where the majority of the important code is
