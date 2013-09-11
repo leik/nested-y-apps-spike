@@ -51,6 +51,11 @@ _renderMenu = Y.Handlebars.compile(
 		'</ul>' +
 	'</div>');
 
+// IE 9 (at least) exhibits a bug whereby progammatically updating an anchor's href attribute causes all other URL properties (e.g. host,
+// port, etc) to be reset to blank. Some of these properties are used by YUI's Pjax utility to check for same-origin to determine whether
+// to let a link-click go to the server or navigate via the Router. For this reason we have to (on browsers that exhibit the bug) copy all
+// these properties off the anchor element and restore them after updating the href.
+// TODO: when this is more than a spike this method should be in its own module and very thoroughly unit tested
 var updateHref = (function() {
 	var updateProperties,
 		propertiesToSave = ['hash', 'host', 'hostname', 'port', 'protocol', 'search'];
@@ -211,6 +216,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			activePerson = this._people[personId];
 
 			if (!activePerson) {
+				// TODO: need to figure out how to safely and appropriately handle this error case
 				alert('404! No such person with id "' + personId + '".');
 				return;
 			}
@@ -222,17 +228,20 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		}
 
 		if (appPath) {
+			// If the activePerson and activeAppPath haven't changed, do nothing
 			if (!personChanged && this.get('activeAppPath') === appPath) {
 				Y.log('App with path "' + appPath + '" already active, doing nothing.');
 				return;
 			}
 			if (!this._appConfigByPath[appPath]) {
+				// TODO: need to figure out how to safely and appropriately handle this error case
 				alert('404! No registered application with path "' + appPath + '".');
 				return;
 			}
 		}
 
 		if (this._activeApp) {
+			// TODO: potentially cache (at most 1) previous activeApp for a more performant back nav? Or will that be too memory-heavy?
 			this._activeApp.destroy();
 			this._set('activeAppPath', null);
 		}
@@ -240,6 +249,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		if (appPath) {
 			this._loadAndRenderApp(appPath);
 		} else {
+			// Alternatively, could have a nominated (or simply first in the list) default app in place of a welcome screen?
 			this._renderWelcomeScreen();
 		}
 	},
@@ -273,12 +283,17 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		appConfig = {
 			container: viewContainer,
 			root: this.get('baseUrl') + appPath,
+			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
+			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
 			linkSelector: null,
-			// Important on IE 9 and below
+			// Important on browsers that don't support HTML5 pushState (combined with the following if statement) otherwise clicking on
+			// sub-links results in the wrong path appended after the /#
 			serverRouting: true
 		};
 
 		if (!this.get('html5')) {
+			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
+			// otherwise clicking on sub-links results in the wrong path appended after the /#
 			appConfig.root = this.removeRoot(appConfig.root);
 		}
 		Y.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
@@ -316,6 +331,8 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 	}
 }, {
 	ATTRS: {
+		// The following four attributes should probably be in a view model of some sort.
+
 		activePerson: {
 			readOnly: true
 		},
@@ -335,6 +352,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		},
 
 		routes: {
+			// The order of these routes is important to ensure no confusion between "/appPath" and "/id@ns" as the first part of the URL
 			value: [{
 				path: '/:personId@:personNs',
 				callbacks: '_handleTopAppRouteChange'
