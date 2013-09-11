@@ -24,6 +24,7 @@ app.get('/*', function(req, res) {
 		return;
 	}
 
+	res.header('X-UA-Compatible', 'IE=edge');
 	res.sendfile('web/index.html');
 });
 
