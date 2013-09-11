@@ -1,7 +1,10 @@
 var express = require('express'),
 	uaParser = require('ua-parser'),
 
-	app = express();
+	app = express(),
+	port = process.env.PORT || 8000;
+
+app.use(express.logger());
 
 // For the JS/CSS resources
 app.use('/static', express.static(__dirname + '/web'));
@@ -28,4 +31,6 @@ app.get('/*', function(req, res) {
 	res.sendfile('web/index.html');
 });
 
-app.listen(8000);
+app.listen(port, function() {
+	console.log('Listening on ' + port);
+});
