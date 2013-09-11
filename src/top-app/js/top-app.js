@@ -1,4 +1,4 @@
-/*global alert, console*/
+/*global alert*/
 
 var CLASS_NAMES = {
 		pjax: 'spike-pjax'
@@ -35,7 +35,8 @@ var CLASS_NAMES = {
 	THROBBER_HTML = '<div class="throbber-large"></div>',
 
 	TopApp,
-	_renderMenu;
+	_renderMenu,
+	updateHref;
 
 _renderMenu = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
@@ -49,6 +50,48 @@ _renderMenu = Y.Handlebars.compile(
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
+
+var updateHref = (function() {
+	var updateProperties,
+		propertiesToSave = ['hash', 'host', 'hostname', 'port', 'protocol', 'search'];
+
+	return function(anchorNode, newUrl) {
+		var href = anchorNode.get('href'),
+			pathname = anchorNode.get('pathname'),
+			properties = {};
+
+		if (newUrl === href || newUrl === pathname ||
+			newUrl === '/' + pathname) { // Some versions of IE don't include the leading "/" in the pathname attribute
+			return;
+		}
+
+		if (updateProperties === false) {
+			// We've been through here before and concluded this browser does not exhibit the bug, we can safely just update the href
+			anchorNode.set('href', newUrl);
+			return;
+		}
+
+		Y.each(propertiesToSave, function(propName) {
+			properties[propName] = anchorNode.get(propName);
+		});
+
+		anchorNode.set('href', newUrl);
+
+		// TODO: is this an appropriate test for the bug? what if the new URL has a diff protocol? (seems unlikely...)
+		//       Maybe check for a blank hostname or something?
+		if (updateProperties || anchorNode.get('protocol') !== properties.protocol) {
+			updateProperties = true;
+			Y.each(properties, function(propVal, propName) {
+				if (propVal && anchorNode.get(propName) !== propVal) {
+					anchorNode.set(propName, propVal);
+				}
+			});
+		} else {
+			// This browser does not exhibit the bug, set updateProperties explicitly to false so we don't bother in future href updates
+			updateProperties = false;
+		}
+	};
+}());
 
 TopApp = Y.Base.create('top-app', Y.App, [], {
 	views: {
@@ -129,7 +172,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 				menuItemNode = container.one('> .pure-menu a[data-path="' + path + '"]');
 
 			if (menuItemNode) {
-				menuItemNode.setAttribute('href', baseUrl + path);
+				updateHref(menuItemNode, baseUrl + path);
 			}
 		}, this);
 	},
@@ -152,7 +195,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			var menuItemNode = container.one('> .pure-menu a[data-personIdentifier="' + personIdentifier + '"]');
 
 			if (menuItemNode) {
-				menuItemNode.setAttribute('href', rootUrl + personIdentifier + activeAppPath);
+				updateHref(menuItemNode, rootUrl + personIdentifier + activeAppPath);
 			}
 		}, this);
 	},
@@ -180,7 +223,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		if (appPath) {
 			if (!personChanged && this.get('activeAppPath') === appPath) {
-				console.log('App with path "' + appPath + '" already active, doing nothing.');
+				Y.log('App with path "' + appPath + '" already active, doing nothing.');
 				return;
 			}
 			if (!this._appConfigByPath[appPath]) {
@@ -238,7 +281,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		if (!this.get('html5')) {
 			appConfig.root = this.removeRoot(appConfig.root);
 		}
-		console.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
+		Y.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
 
 		activePerson = this.get('activePerson');
 		if (activePerson) {
