@@ -8,6 +8,7 @@ app.use(express.logger());
 
 // For the JS/CSS resources
 app.use('/static', express.static(__dirname + '/web'));
+app.use('/yui3', express.static(__dirname + '/yui3'));
 
 function hasNoPushStateSupport(req) {
 	var ua = uaParser.parseUA(req.headers['user-agent']),

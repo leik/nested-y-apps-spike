@@ -1,0 +1,4 @@
+[submodule "yui3"]
+	path = yui3
+	url = https://github.com/yui/yui3.git
+	branch = dev-master
