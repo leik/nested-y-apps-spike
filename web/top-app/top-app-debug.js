@@ -43,13 +43,13 @@ var CLASS_NAMES = {
 
 _renderMenu = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
-		'<ul class="' + CLASS_NAMES.pjax + '">' +
+		'<ul class="' + (Y.Router.html5 ? CLASS_NAMES.pjax : '') + '">' +
 			'{{#each menuItems}}' +
-				'<li><a href="{{{../baseUrl}}}{{path}}" data-path="{{path}}">{{label}}</a></li>' +
+				'<li><a href="{{{../baseUrl}}}{{path}}/" data-path="{{path}}">{{label}}</a></li>' +
 			'{{/each}}' +
 			'<li class="pure-menu-separator"></li>' +
 			'{{#each people}}' +
-				'<li><a href="{{{../rootUrl}}}{{@key}}" data-personIdentifier="{{@key}}">{{name}}</a></li>' +
+				'<li><a href="{{{../rootUrl}}}{{@key}}/" data-personIdentifier="{{@key}}">{{name}}</a></li>' +
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
@@ -100,6 +100,10 @@ var updateHref = (function() {
 		}
 	};
 }());
+
+function ensureTrailingSlash(urlStr) {
+	return urlStr.charAt(urlStr.length - 1) === '/' ? urlStr : urlStr + '/';
+}
 
 TopApp = Y.Base.create('top-app', Y.App, [], {
 	views: {
@@ -285,20 +289,15 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		appConfig = {
 			container: viewContainer,
-			root: this.get('baseUrl') + appPath,
-			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
-			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
-			linkSelector: null,
-			// Important on browsers that don't support HTML5 pushState (combined with the following if statement) otherwise clicking on
-			// sub-links results in the wrong path appended after the /#
-			serverRouting: true
+			root: this.get('baseUrl') + appPath
 		};
 
-		if (!this.get('html5')) {
-			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
-			// otherwise clicking on sub-links results in the wrong path appended after the /#
-			appConfig.root = this.removeRoot(appConfig.root);
+		if (Y.Router.html5) {
+			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
+			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
+			appConfig.linkSelector = null;
 		}
+
 		Y.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
 
 		activePerson = this.get('activePerson');
@@ -317,7 +316,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 	},
 
 	_getAttrRootUrl: function() {
-		return this._normalizePath(this.get('root') + '/');
+		return ensureTrailingSlash(this.get('root'));
 	},
 
 	_getAttrBaseUrl: function() {
@@ -330,7 +329,11 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			baseUrl += identifier.id + '@' + identifier.namespace + '/';
 		}
 
-		return this._normalizePath(baseUrl);
+		return ensureTrailingSlash(baseUrl);
+	},
+
+	_initAttrLinkSelector: function() {
+		return Y.Router.html5 ? ('a.' + CLASS_NAMES.pjax +', .' + CLASS_NAMES.pjax + ' a') : null;
 	}
 }, {
 	ATTRS: {
@@ -354,6 +357,13 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			getter: '_getAttrBaseUrl'
 		},
 
+		serverRouting: {
+			value: true
+		},
+		html5: {
+			value: true
+		},
+
 		routes: {
 			// The order of these routes is important to ensure no confusion between "/appPath" and "/id@ns" as the first part of the URL
 			value: [{
@@ -375,7 +385,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		},
 
 		linkSelector: {
-			value: 'a.' + CLASS_NAMES.pjax +', .' + CLASS_NAMES.pjax + ' a'
+			valueFn: '_initAttrLinkSelector'
 		}
 	}
 });

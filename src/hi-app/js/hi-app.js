@@ -22,6 +22,10 @@ _renderContent = Y.Handlebars.compile(
 		'{{#if greeting}} {{greeting.long}}{{/if}}' +
 	'</p>');
 
+function ensureTrailingSlash(urlStr) {
+	return urlStr.charAt(urlStr.length - 1) === '/' ? urlStr : urlStr + '/';
+}
+
 HiApp = Y.Base.create('hi-app', Y.App, [], {
 	views: {
 	},
@@ -43,7 +47,7 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 		HiApp.superclass.render.apply(this, arguments);
 
 		var links = _renderLinks({
-			baseUrl: this._normalizePath(this.get('root') + '/'),
+			baseUrl: ensureTrailingSlash(this.get('root')),
 			greetings: this._greetings
 		});
 

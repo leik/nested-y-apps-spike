@@ -15,14 +15,17 @@
 			'use strict';
 
 			var location = Y.config.win.location,
+				regex = /^((?:\/.+?@.+)?\/[^@]+?\/)(.+)$/,
+				pathParts,
 				app;
 
 			// TODO: Find a more static way to do this so it can be done sooner (in the head?)
 			// TODO: Y.Router.html5 is not documented so may be private
-			if (!Y.Router.html5 && location.pathname.length > 1) {
+			if (!Y.Router.html5 && regex.test(location.pathname)) {
 				// If we've ended up with a full path on a browser that doesn't support pushState we reload the page
 				// with a hash-based path so that subsequent navigations are correct
-				location.replace('/#' + location.pathname);
+				pathParts = regex.exec(location.pathname);
+				location.replace(pathParts[1] + '#/' + pathParts[2]);
 				return;
 			}
 

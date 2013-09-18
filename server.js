@@ -19,18 +19,26 @@ function hasNoPushStateSupport(req) {
 	return (family === 'ie' && majorVer < 10);
 }
 
-// Map any path through to the client to be processed by the Y.App.
-app.get('/*', function(req, res) {
+function sendIndexHtml(req, res) {
+	res.header('X-UA-Compatible', 'IE=edge');
+	res.sendfile('web/index.html');
+}
 
-	if (req.path.length > 1 && hasNoPushStateSupport(req)) {
+// Matches (/:id@:ns/:appPath/)(*) and (/:appPath/)(*) then redirects a hash-based URL on browsers that don't support HTML5 pushState
+app.get(/^((?:\/.+?@.+)?\/[^@]+?\/)(.+)$/, function redirectOnNoPushStateSupport(req, res) {
+	var basePath;
+
+	if (hasNoPushStateSupport(req)) {
 		// Rewrite the path to be hash-based if we detect a full path on a browser that doesn't support HTML5 pushState
-		res.redirect('/#' + req.path);
+		basePath = req.params[0];
+		res.redirect(basePath.substring(0, basePath.length - 1) + '#/' + req.params[1]);
 		return;
 	}
 
-	res.header('X-UA-Compatible', 'IE=edge');
-	res.sendfile('web/index.html');
+	sendIndexHtml(req, res);
 });
+
+app.get('/*', sendIndexHtml);
 
 app.listen(port, function() {
 	console.log('Listening on ' + port);

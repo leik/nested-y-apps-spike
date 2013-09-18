@@ -22,6 +22,10 @@ _renderContent = Y.Handlebars.compile(
 		'{{#if farewell}}, {{farewell.long}}{{else}}.{{/if}}' +
 	'</p>');
 
+function ensureTrailingSlash(urlStr) {
+	return urlStr.charAt(urlStr.length - 1) === '/' ? urlStr : urlStr + '/';
+}
+
 ByeApp = Y.Base.create('bye-app', Y.App, [], {
 	views: {
 	},
@@ -43,7 +47,7 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 		ByeApp.superclass.render.apply(this, arguments);
 
 		var links = _renderLinks({
-			baseUrl: this._normalizePath(this.get('root') + '/'),
+			baseUrl: ensureTrailingSlash(this.get('root')),
 			farewells: this._farewells
 		});
 
