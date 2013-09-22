@@ -41,12 +41,13 @@ var CLASS_NAMES = {
 _renderMenu = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
 		'<ul class="' + CLASS_NAMES.pjax + '">' +
+			'<li><a href="{{{baseUrl}}}">Home</a></li>' +
 			'{{#each menuItems}}' +
-				'<li><a href="{{{../baseUrl}}}{{path}}" data-path="{{path}}">{{label}}</a></li>' +
+				'<li><a href="{{{../baseUrl}}}{{path}}/" data-path="{{path}}">{{label}}</a></li>' +
 			'{{/each}}' +
 			'<li class="pure-menu-separator"></li>' +
 			'{{#each people}}' +
-				'<li><a href="{{{../rootUrl}}}{{@key}}" data-personIdentifier="{{@key}}">{{name}}</a></li>' +
+				'<li><a href="{{{../rootUrl}}}{{@key}}/" data-personIdentifier="{{@key}}">{{name}}</a></li>' +
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
@@ -177,7 +178,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 				menuItemNode = container.one('> .pure-menu a[data-path="' + path + '"]');
 
 			if (menuItemNode) {
-				updateHref(menuItemNode, baseUrl + path);
+				updateHref(menuItemNode, baseUrl + path + '/');
 			}
 		}, this);
 	},
@@ -194,13 +195,13 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		rootUrl = this.get('rootUrl');
 		activeAppPath = this.get('activeAppPath');
-		activeAppPath = activeAppPath ? ('/' + activeAppPath) : '';
+		activeAppPath = activeAppPath ? (activeAppPath + '/') : '';
 
 		Y.each(this._people, function(person, personIdentifier) {
 			var menuItemNode = container.one('> .pure-menu a[data-personIdentifier="' + personIdentifier + '"]');
 
 			if (menuItemNode) {
-				updateHref(menuItemNode, rootUrl + personIdentifier + activeAppPath);
+				updateHref(menuItemNode, rootUrl + personIdentifier + '/' + activeAppPath);
 			}
 		}, this);
 	},
