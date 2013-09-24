@@ -2,9 +2,6 @@
 	"name": "bye-app",
 	"builds": {
 		"bye-app": {
-			"prependfiles": [
-				"../../.copyright.js"
-			],
 			"jsfiles": [
 				"bye-app.js"
 			]

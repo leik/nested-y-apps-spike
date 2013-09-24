@@ -57,7 +57,7 @@ _renderMenu = Y.Handlebars.compile(
 // to let a link-click go to the server or navigate via the Router. For this reason we have to (on browsers that exhibit the bug) copy all
 // these properties off the anchor element and restore them after updating the href.
 // TODO: when this is more than a spike this method should be in its own module and very thoroughly unit tested
-var updateHref = (function() {
+updateHref = (function() {
 	var updateProperties,
 		propertiesToSave = ['hash', 'host', 'hostname', 'port', 'protocol', 'search'];
 
