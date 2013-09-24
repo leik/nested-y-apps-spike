@@ -60,7 +60,7 @@ _renderMenu = Y.Handlebars.compile(
 // to let a link-click go to the server or navigate via the Router. For this reason we have to (on browsers that exhibit the bug) copy all
 // these properties off the anchor element and restore them after updating the href.
 // TODO: when this is more than a spike this method should be in its own module and very thoroughly unit tested
-var updateHref = (function() {
+updateHref = (function() {
 	var updateProperties,
 		propertiesToSave = ['hash', 'host', 'hostname', 'port', 'protocol', 'search'];
 
@@ -270,6 +270,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		var cfg = this._appConfigByPath[appPath],
 			ns = Y.namespace(cfg.namespace),
 			AppFn = ns && ns[cfg.className],
+			html5,
 			viewContainer,
 			appConfig,
 			activePerson,
@@ -294,11 +295,13 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			serverRouting: true
 		};
 
-		if (!this.get('html5')) {
+		html5 = this.get('html5');
+		if (!html5) {
 			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
 			// otherwise clicking on sub-links results in the wrong path appended after the /#
 			appConfig.root = this.removeRoot(appConfig.root);
 		}
+
 
 		activePerson = this.get('activePerson');
 		if (activePerson) {
@@ -311,6 +314,13 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		this._activeApp = app;
 		this._set('activeAppPath', appPath);
+
+		// TODO: can we find a less hacky way around this?
+		if (!html5) {
+			// Ensure the top level application is handling navigation on legacy browsers otherwise the fact that we're forcing
+			// serverRouting to true on the nested app means that it will always hit the server on calls to navigate().
+			app._navigate = Y.bind(this._navigate, this);
+		}
 
 		app.render().dispatch();
 	},

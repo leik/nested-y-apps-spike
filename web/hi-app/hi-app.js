@@ -2,7 +2,8 @@ YUI.add('hi-app', function (Y, NAME) {
 
 "use strict";
 var CLASS_NAMES = {
-		pjax: 'spike-pjax'
+		pjax: 'spike-pjax',
+		nav: 'spike-nav'
 	},
 
 	HiApp,
@@ -11,9 +12,9 @@ var CLASS_NAMES = {
 
 _renderLinks = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
-		'<ul class="' + CLASS_NAMES.pjax + '">' +
+		'<ul class="' + CLASS_NAMES.nav + '">' +
 			'{{#each greetings}}' +
-				'<li><a href="{{{../baseUrl}}}{{@key}}">{{short}}</a></li>' +
+				'<li><a href="#" data-greeting="{{@key}}">{{short}}</a></li>' +
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
@@ -27,6 +28,12 @@ _renderContent = Y.Handlebars.compile(
 
 HiApp = Y.Base.create('hi-app', Y.App, [], {
 	views: {
+	},
+
+	events: {
+		'.spike-nav a': {
+			click: '_onNavLinkClick'
+		}
 	},
 
 	initializer: function() {
@@ -46,13 +53,17 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 		HiApp.superclass.render.apply(this, arguments);
 
 		var links = _renderLinks({
-			baseUrl: this._normalizePath(this.get('root') + '/'),
 			greetings: this._greetings
 		});
 
 		this.get('container').insertBefore(links, this.get('viewContainer'));
 
 		return this;
+	},
+
+	_onNavLinkClick: function(event) {
+		event.preventDefault();
+		this.navigate(this._joinURL(event.target.getData('greeting')));
 	},
 
 	_renderInnerAppContent: function() {
