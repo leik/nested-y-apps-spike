@@ -157,7 +157,6 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		});
 
 		this.get('container').insertBefore(menuHtml, this.get('viewContainer'));
-		this._renderWelcomeScreen();
 
 		return this;
 	},
@@ -289,6 +288,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			linkSelector: null
 		};
 
+		// TODO: test this in 3.9 and 3.12
 		if (!this.get('html5')) {
 			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
 			// otherwise clicking on sub-links results in the wrong path appended after the /#
