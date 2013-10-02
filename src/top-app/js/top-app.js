@@ -242,6 +242,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		if (this._activeApp) {
 			// TODO: potentially cache (at most 1) previous activeApp for a more performant back nav? Or will that be too memory-heavy?
+			this._activeApp.removeTarget(this);
 			this._activeApp.destroy();
 			this._set('activeAppPath', null);
 		}
@@ -308,6 +309,8 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		this._activeApp = app;
 		this._set('activeAppPath', appPath);
+
+		app.addTarget(this);
 
 		app.render().dispatch();
 	},
