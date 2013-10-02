@@ -88,9 +88,6 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 
 		routes: {
 			value: [{
-				path: '/',
-				callbacks: '_handleInnerAppRoute'
-			}, {
 				path: '/:greeting',
 				callbacks: '_handleInnerAppRoute'
 			}, {

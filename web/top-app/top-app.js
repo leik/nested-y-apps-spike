@@ -160,7 +160,6 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		});
 
 		this.get('container').insertBefore(menuHtml, this.get('viewContainer'));
-		this._renderWelcomeScreen();
 
 		return this;
 	},
@@ -270,7 +269,6 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		var cfg = this._appConfigByPath[appPath],
 			ns = Y.namespace(cfg.namespace),
 			AppFn = ns && ns[cfg.className],
-			html5,
 			viewContainer,
 			appConfig,
 			activePerson,
@@ -289,14 +287,11 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			root: this.get('baseUrl') + appPath,
 			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
 			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
-			linkSelector: null,
-			// Important on browsers that don't support HTML5 pushState (combined with the following if statement) otherwise clicking on
-			// sub-links results in the wrong path appended after the /#
-			serverRouting: true
+			linkSelector: null
 		};
 
-		html5 = this.get('html5');
-		if (!html5) {
+		// TODO: test this in 3.9 and 3.12
+		if (!this.get('html5')) {
 			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
 			// otherwise clicking on sub-links results in the wrong path appended after the /#
 			appConfig.root = this.removeRoot(appConfig.root);
@@ -314,13 +309,6 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		this._activeApp = app;
 		this._set('activeAppPath', appPath);
-
-		// TODO: can we find a less hacky way around this?
-		if (!html5) {
-			// Ensure the top level application is handling navigation on legacy browsers otherwise the fact that we're forcing
-			// serverRouting to true on the nested app means that it will always hit the server on calls to navigate().
-			app._navigate = Y.bind(this._navigate, this);
-		}
 
 		app.render().dispatch();
 	},

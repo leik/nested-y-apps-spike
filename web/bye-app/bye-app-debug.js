@@ -66,6 +66,7 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 	},
 
 	_handleInnerAppRoute: function(req) {
+		Y.log('Bye app routed with farewell: "' + req.params.farewell + '".');
 		this._activeFarewell = this._farewells[req.params.farewell];
 		this._renderInnerAppContent();
 	}
@@ -77,9 +78,6 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 
 		routes: {
 			value: [{
-				path: '/',
-				callbacks: '_handleInnerAppRoute'
-			}, {
 				path: '/:farewell',
 				callbacks: '_handleInnerAppRoute'
 			}, {

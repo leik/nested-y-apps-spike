@@ -77,6 +77,7 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 	},
 
 	_handleInnerAppRoute: function(req) {
+		Y.log('Hi app routed with greeting: "' + req.params.greeting + '".');
 		this._activeGreeting = this._greetings[req.params.greeting];
 		this._renderInnerAppContent();
 	}
@@ -88,9 +89,6 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 
 		routes: {
 			value: [{
-				path: '/',
-				callbacks: '_handleInnerAppRoute'
-			}, {
 				path: '/:greeting',
 				callbacks: '_handleInnerAppRoute'
 			}, {

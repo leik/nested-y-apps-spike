@@ -77,9 +77,6 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 
 		routes: {
 			value: [{
-				path: '/',
-				callbacks: '_handleInnerAppRoute'
-			}, {
 				path: '/:farewell',
 				callbacks: '_handleInnerAppRoute'
 			}, {
