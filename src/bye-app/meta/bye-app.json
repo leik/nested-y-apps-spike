@@ -3,7 +3,8 @@
 		"requires": [
 			"app-base",
 			"base",
-			"handlebars"
+			"handlebars",
+			"app-nestable"
 		]
 	}
 }

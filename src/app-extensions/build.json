@@ -1,0 +1,13 @@
+{
+	"name": "app-extensions",
+	"builds": {
+		"app-nestable": {
+			"jsfiles": [
+				"app-nestable.js"
+			]
+		}
+	},
+	"shifter": {
+		"strict": true
+	}
+}

@@ -291,7 +291,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		if (!this.get('html5')) {
 			// Use a separate attribute to build up PJAX links as we've lied to the nested Y.App about what its root is
-			appConfig.pjaxRootUrl = appConfig.root;
+			appConfig.pjaxRootPath = appConfig.root;
 
 			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' otherwise clicking on sub-links results in the
 			// wrong path appended after the /#
