@@ -102,7 +102,7 @@ updateHref = (function() {
 	};
 }());
 
-TopApp = Y.Base.create('top-app', Y.App, [], {
+TopApp = Y.Base.create('top-app', Y.App, [Y.SPIKE.AppNestanator], {
 	views: {
 	},
 
@@ -244,9 +244,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		}
 
 		if (this._activeApp) {
-			// TODO: potentially cache (at most 1) previous activeApp for a more performant back nav? Or will that be too memory-heavy?
-			this._activeApp.removeTarget(this);
-			this._activeApp.destroy();
+			this.uprootApp(this._activeApp);
 			this._set('activeAppPath', null);
 		}
 
@@ -271,10 +269,9 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		var cfg = this._appConfigByPath[appPath],
 			ns = Y.namespace(cfg.namespace),
 			AppFn = ns && ns[cfg.className],
+			appConfig = {},
 			viewContainer,
-			appConfig,
-			activePerson,
-			app;
+			activePerson;
 
 		if (!AppFn) {
 			alert('500! Failed to load application with path "' + appPath + '".');
@@ -284,25 +281,6 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 		viewContainer = this.get('viewContainer');
 		viewContainer.empty();
 
-		appConfig = {
-			container: viewContainer,
-			root: this.get('baseUrl') + appPath,
-			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
-			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
-			linkSelector: null
-		};
-
-		if (!this.get('html5')) {
-			// Use a separate attribute to build up PJAX links as we've lied to the nested Y.App about what its root is
-			appConfig.pjaxRootUrl = appConfig.root;
-
-			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' otherwise clicking on sub-links results in the
-			// wrong path appended after the /#
-			appConfig.root = this.removeRoot(appConfig.root);
-		}
-
-		Y.log('Loading app with path "' + appPath + '" and root URL: "' + appConfig.root + '"');
-
 		activePerson = this.get('activePerson');
 		if (activePerson) {
 			appConfig.componentContext = {
@@ -310,14 +288,9 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			};
 		}
 
-		app = new AppFn(appConfig);
+		this._activeApp = this.nestApp(AppFn, this.get('baseUrl') + appPath, viewContainer, appConfig);
 
-		this._activeApp = app;
 		this._set('activeAppPath', appPath);
-
-		app.addTarget(this);
-
-		app.render().dispatch();
 	},
 
 	_getAttrRootUrl: function() {
@@ -387,4 +360,4 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 Y.namespace('SPIKE').TopApp = TopApp;
 
 
-}, '@VERSION@', {"requires": ["app-base", "array-extras", "base", "handlebars"]});
+}, '@VERSION@', {"requires": ["app-base", "array-extras", "base", "handlebars", "app-nestanator"]});

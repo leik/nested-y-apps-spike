@@ -1,0 +1,1 @@
+YUI.add("app-nestable",function(e,t){"use strict";function n(){}n.ATTRS={pjaxRootPath:{valueFn:"_initAttrPjaxRootPath"}},n.prototype={_initAttrPjaxRootPath:function(){return this.get("root")},getFullPathForPjax:function(e){var t=this.get("pjaxRootPath"),n=e?t+"/"+e:t;return this._normalizePath(n)}},e.namespace("SPIKE").AppNestable=n},"@VERSION@",{requires:[]});

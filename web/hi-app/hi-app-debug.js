@@ -26,7 +26,7 @@ _renderContent = Y.Handlebars.compile(
 		'{{#if greeting}} {{greeting.long}}{{/if}}' +
 	'</p>');
 
-HiApp = Y.Base.create('hi-app', Y.App, [], {
+HiApp = Y.Base.create('hi-app', Y.App, [Y.SPIKE.AppNestable], {
 	views: {
 	},
 
@@ -106,4 +106,4 @@ HiApp = Y.Base.create('hi-app', Y.App, [], {
 Y.namespace('SPIKE').HiApp = HiApp;
 
 
-}, '@VERSION@', {"requires": ["app-base", "base", "handlebars"]});
+}, '@VERSION@', {"requires": ["app-base", "base", "handlebars", "app-nestable"]});
