@@ -5,6 +5,11 @@
 			"jsfiles": [
 				"app-nestable.js"
 			]
+		},
+		"app-nestanator": {
+			"jsfiles": [
+				"app-nestanator.js"
+			]
 		}
 	},
 	"shifter": {
