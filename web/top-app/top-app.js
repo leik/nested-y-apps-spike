@@ -244,6 +244,7 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		if (this._activeApp) {
 			// TODO: potentially cache (at most 1) previous activeApp for a more performant back nav? Or will that be too memory-heavy?
+			this._activeApp.removeTarget(this);
 			this._activeApp.destroy();
 			this._set('activeAppPath', null);
 		}
@@ -290,10 +291,12 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 			linkSelector: null
 		};
 
-		// TODO: test this in 3.9 and 3.12
 		if (!this.get('html5')) {
-			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' (combined with forced serverRouting above)
-			// otherwise clicking on sub-links results in the wrong path appended after the /#
+			// Use a separate attribute to build up PJAX links as we've lied to the nested Y.App about what its root is
+			appConfig.pjaxRootUrl = appConfig.root;
+
+			// Remove the top level Y.App's 'root' from the beginning of the sub-app's 'root' otherwise clicking on sub-links results in the
+			// wrong path appended after the /#
 			appConfig.root = this.removeRoot(appConfig.root);
 		}
 
@@ -309,6 +312,8 @@ TopApp = Y.Base.create('top-app', Y.App, [], {
 
 		this._activeApp = app;
 		this._set('activeAppPath', appPath);
+
+		app.addTarget(this);
 
 		app.render().dispatch();
 	},
