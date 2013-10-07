@@ -2,7 +2,10 @@ var express = require('express'),
 	uaParser = require('ua-parser'),
 
 	app = express(),
-	port = process.env.PORT || 8000;
+	port = process.env.PORT || 8000,
+
+	ROOT_PATH = '/top/',
+	ROOT_PATH_LENGTH = ROOT_PATH.length;
 
 app.use(express.logger());
 
@@ -19,12 +22,20 @@ function hasNoPushStateSupport(req) {
 	return (family === 'ie' && majorVer < 10);
 }
 
-// Map any path through to the client to be processed by the Y.App.
-app.get('/*', function(req, res) {
+function redirectToRoot(req, res) {
+	res.redirect(ROOT_PATH);
+}
 
-	if (req.path.length > 1 && hasNoPushStateSupport(req)) {
+// Forward to /top/ to ensure the top-level Y.App is tested with a non-default root
+app.get('/', redirectToRoot);
+app.get(/\/top$/, redirectToRoot);
+
+// Map any path through to the client to be processed by the Y.App.
+app.get(ROOT_PATH + '*', function(req, res) {
+
+	if (req.path.length > ROOT_PATH_LENGTH && hasNoPushStateSupport(req)) {
 		// Rewrite the path to be hash-based if we detect a full path on a browser that doesn't support HTML5 pushState
-		res.redirect('/#' + req.path);
+		res.redirect(ROOT_PATH + '#' + req.path.substring(ROOT_PATH_LENGTH - 1));
 		return;
 	}
 

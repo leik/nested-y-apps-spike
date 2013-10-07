@@ -10,7 +10,7 @@ _renderLinks = Y.Handlebars.compile(
 	'<div class="pure-menu pure-menu-open pure-menu-horizontal">' +
 		'<ul class="' + CLASS_NAMES.pjax + '">' +
 			'{{#each farewells}}' +
-				'<li><a href="{{{../baseUrl}}}{{@key}}">{{short}}</a></li>' +
+				'<li><a href="{{{../pjaxRootUrl}}}{{@key}}">{{short}}</a></li>' +
 			'{{/each}}' +
 		'</ul>' +
 	'</div>');
@@ -43,7 +43,7 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 		ByeApp.superclass.render.apply(this, arguments);
 
 		var links = _renderLinks({
-			baseUrl: this._normalizePath(this.get('root') + '/'),
+			pjaxRootUrl: this._normalizePath(this.get('pjaxRootUrl') + '/'),
 			farewells: this._farewells
 		});
 
@@ -66,11 +66,19 @@ ByeApp = Y.Base.create('bye-app', Y.App, [], {
 		Y.log('Bye app routed with farewell: "' + req.params.farewell + '".');
 		this._activeFarewell = this._farewells[req.params.farewell];
 		this._renderInnerAppContent();
+	},
+
+	_initAttrPjaxRootUrl: function() {
+		return this.get('root');
 	}
 }, {
 	ATTRS: {
 		componentContext: {
 			writeOnce: 'initOnly'
+		},
+
+		pjaxRootUrl: {
+			valueFn: '_initAttrPjaxRootUrl'
 		},
 
 		routes: {
