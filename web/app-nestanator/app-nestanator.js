@@ -1,10 +1,32 @@
 YUI.add('app-nestanator', function (Y, NAME) {
 
 "use strict";
+/**
+Y.App Extension for a Y.App that nests other Y.Apps inside it. Provides a function for constructing, rendering and dispatching a nested
+Y.App (ensuring the appropriate configuration) and a function for uprooting a nested Y.App.
+
+@module app-nestanator
+@class AppNestanator
+@constructor
+@namespace SPIKE
+**/
 function AppNestanator() {
 }
 
 AppNestanator.prototype = {
+	/**
+	Nests the given Y.App inside this Y.App. The provided App (constructor function) will be constructed, rendered and dispatched. This App
+	will be added as an EventTarget for the nested Y.App.
+
+	@method nestApp
+	@param {Function} AppConstructorFn constructor function for constructing the nested Y.App
+	@param {String} rootPathToApp context path to the nested Y.App (including this Y.App's 'root')
+	@param {Node} containerNode the Node to render the nested Y.App into
+	@param {Object} [config] additional config to pass to the constructor of the nested Y.App. Note that the `container`, `root` and
+					`linkSelector` config options will be ignored if provided.
+
+	@return {App} the instance of the given Y.App that has been nested in this Y.App
+	**/
 	nestApp: function(AppConstructorFn, rootPathToApp, containerNode, config) {
 		var appConfig,
 			app;
@@ -12,7 +34,7 @@ AppNestanator.prototype = {
 		appConfig = {
 			container: containerNode,
 			root: rootPathToApp,
-			// Null out the linkSelector as this Y.App is already listening for Pjax link clicks.
+			// Null out the linkSelector as only the top level Y.App should be listening for Pjax link clicks.
 			// See http://yuilibrary.com/yui/docs/app/#known-limitations for more info.
 			linkSelector: null
 		};
@@ -40,6 +62,12 @@ AppNestanator.prototype = {
 		return app;
 	},
 
+	/**
+	Uproots the given App, removing this App as an EventTarget and destroying the App.
+
+	@method uprootApp
+	@param {App} app instance of the Y.App nested inside this Y.App to uproot
+	**/
 	uprootApp: function(app) {
 		app.removeTarget(this);
 		app.destroy();
